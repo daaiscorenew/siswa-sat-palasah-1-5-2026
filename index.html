@@ -499,23 +499,27 @@ function renderQ(){
   }
   document.getElementById('navDots').innerHTML=dh;
 
-  // PERBAIKAN: Sembunyikan container gambar lama agar tidak dobel
+  // Sembunyikan container gambar lama agar tidak dobel
   var iw=document.getElementById('qImageWrap');
   if(iw) iw.style.display = 'none'; 
 
-  // Susun layout: Gambar di atas (jika ada), lalu Nomor & Teks Soal di bawahnya
+  // PERBAIKAN: Nomor & Gambar sejajar di baris atas, Pertanyaan di bawah gambar
   var imgHTML = '';
   if(q.imageUrl){
-    imgHTML = '<div class="mb-5 flex justify-center">' +
-              '<img src="'+q.imageUrl+'" class="max-h-[180px] md:max-h-[220px] rounded-lg border border-border shadow-sm" onerror="this.style.display=\'none\'">' +
+    imgHTML = '<div class="flex-shrink-0 ml-3">' +
+              '<img src="'+q.imageUrl+'" class="max-h-[160px] md:max-h-[200px] rounded-lg border border-border shadow-sm" onerror="this.style.display=\'none\'">' +
               '</div>';
   }
 
   document.getElementById('qText').innerHTML = 
-    imgHTML + 
-    '<div class="flex">' +
-        '<span class="text-kopAccent font-bold mr-2 flex-shrink-0">'+(uState.currentQ+1)+'.</span>' +
-        '<span class="soal-text">'+(q.text||'')+'</span>' +
+    '<div class="w-full">' +
+        // Baris 1: Nomor dan Gambar Sejajar
+        '<div class="flex items-start mb-4">' +
+            '<span class="text-kopAccent font-bold mr-2 flex-shrink-0">'+(uState.currentQ+1)+'.</span>' +
+            imgHTML + 
+        '</div>' +
+        // Baris 2: Teks Pertanyaan (otomatis di bawah gambar, rata kiri)
+        '<div class="soal-text">'+(q.text||'')+'</div>' +
     '</div>';
 
   var oe=document.getElementById('qOptions');
