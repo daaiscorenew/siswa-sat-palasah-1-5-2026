@@ -62,8 +62,6 @@ var FIREBASE_CONFIGS = {
     measurementId: "G-3YHBGXYHKS"
   }
 };
-try{firebase.initializeApp({apiKey:"_",projectId:"_"})}catch(e){}
-var _dbCache={};
 function getDB(k){if(_dbCache[k])return _dbCache[k];if(!FIREBASE_CONFIGS[k])return null;try{var app=firebase.initializeApp(FIREBASE_CONFIGS[k],"sdb_"+k.replace(/\s/g,"_"));var db=firebase.firestore(app);db.settings({experimentalAutoDetectLongPolling:true});_dbCache[k]=db;return db}catch(e){return null}}
 var MAPEL_LIST=[{id:"ppkn",nama:"Pendidikan Pancasila"},{id:"mat",nama:"Matematika"},{id:"bin",nama:"Bahasa Indonesia"},{id:"sbd",nama:"Seni Budaya"},{id:"ipas",nama:"IPAS"},{id:"bsd",nama:"Bahasa Sunda"},{id:"bing",nama:"Bahasa Inggris"},{id:"pai",nama:"PAI"},{id:"pjok",nama:"PJOK"}];
 </script>
@@ -290,7 +288,7 @@ function renderQ(){
   var oe=document.getElementById('qOptions');
   if(q.type==='pg'&&q.options){
     var h='';
-    var optImages = q.optionImages || []; // Ambil array gambar opsi
+    var optImages = q.optionImages || [];
     q.options.forEach(function(o,i){ 
       var ltr=String.fromCharCode(65+i); 
       var sel=currentAnswer===ltr;
@@ -323,6 +321,11 @@ function pilihJawaban(ltr){
   renderQ(); 
 }
 
+/* ============================================================
+   PERBAIKAN UTAMA: simpanUraian TIDAK lagi memanggil renderQ()
+   Cukup simpan data & update titik navigasi saja.
+   Textarea tetap utuh, tidak dihancurkan & dibuat ulang.
+   ============================================================ */
 function simpanUraian(val){ 
   var q = uState.soalList[uState.currentQ]; 
   var qId = q.docId || q.id;
@@ -331,7 +334,27 @@ function simpanUraian(val){
   } else {
     delete uState.jawabanById[qId];
   }
-  renderQ(); 
+  // Hanya update titik navigasi, TANPA re-render seluruh soal
+  updateNavDot(uState.currentQ);
+}
+
+/* Fungsi baru: update hanya 1 titik navigasi tanpa re-render */
+function updateNavDot(index) {
+  var dots = document.getElementById('navDots').children;
+  if (!dots || !dots[index]) return;
+  var qId = uState.soalList[index].docId || uState.soalList[index].id;
+  var hasAnswer = !!uState.jawabanById[qId];
+  var cls;
+  if (index === uState.currentQ) {
+    cls = hasAnswer 
+      ? 'w-2.5 h-2.5 rounded-full cursor-pointer transition-all bg-success scale-125 shadow-lg flex-shrink-0' 
+      : 'w-2.5 h-2.5 rounded-full cursor-pointer transition-all bg-kopAccent scale-125 shadow-lg flex-shrink-0';
+  } else {
+    cls = hasAnswer 
+      ? 'w-2.5 h-2.5 rounded-full cursor-pointer transition-all bg-success/60 flex-shrink-0' 
+      : 'w-2.5 h-2.5 rounded-full cursor-pointer transition-all bg-border hover:bg-muted flex-shrink-0';
+  }
+  dots[index].className = cls;
 }
 
 function autoFinish(){if(!uState.isSubmitted){showToast('Waktu Habis!','warning');doFinish()}}
